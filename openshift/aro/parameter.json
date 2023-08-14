@@ -1,0 +1,29 @@
+{
+    "resourceGroup": "resource_group_name",
+    "location": "eastus",
+    "subscriptionId": "subscription_id",
+    "servicePrincipal": {
+        "clientId": "client_id",
+        "clientSecret": "client_secret",
+        "tenantId": "tenant_id"
+    },
+    "network": {
+        "vnetName": "vnet",
+        "vnetCIDR": "10.0.0.0/20",
+        "workerSubnetName": "worker-subnet",
+        "workerSubnetCIDR": "10.0.0.0/24",
+        "controlSubnetName": "control-subnet",
+        "controlSubnetCIDR": "10.0.1.0/24"
+    },
+    "cluster": {
+        "name": "cluster_name",
+        "domain": "cluster_subdomain",
+        "version": "x.x.x",
+        "masterSize": "Standard_D8s_v3",
+        "apiVisibility": "Public",
+        "ingressVisibility": "Public",
+        "workerQuantity": 3,
+        "workerSize": "Standard_D16s_v3",
+        "pullSecret": ""
+    }
+}
