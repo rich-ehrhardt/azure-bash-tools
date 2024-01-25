@@ -15,23 +15,27 @@ function usage() {
 }
 
 # Parse input arguments
-while getopts ":n:t:h" option; do
+while getopts "n:g:v:s:t:h" option; do
     case $option in
         h)   # Display help
             usage
             exit 1;;
         n)  # Set the name prefix
-            NAME_PREFIX=$OPTARG;;
+            NAME_PREFIX=$OPTARG
+            ;;
         g)  # Set the resource group
-            RESOURCE_GROUP=$OPT_ARG;;
+            RESOURCE_GROUP=$OPTARG
+            ;;
         v)  # Set the VNet name
-            VNET_NAME=$OPT_ARG;;
+            VNET_NAME=$OPTARG
+            ;;
         s)  # Set the subnet name
-            SUBNET_NAME=$OPT_ARG;;
+            SUBNET_NAME=$OPTARG
+            ;;
         t)   # Set temp dir
-            TMP_DIR=$OPTARG;;
+            TMP_DIR=$OPTARG
+            ;;
         \?) 
-            echo "ERROR: Invalid option"
             usage
             exit 1;;
     esac
@@ -65,6 +69,9 @@ fi
 if [[ -z $TMP_DIR ]]; then TMP_DIR="/tmp"; fi
 if [[ -z $TEMPLATE_FILENAME ]]; then TEMPLATE_FILENAME="deployment.json"; fi
 
+# Get the subnet address
+SUBNET_CIDR=$(az network vnet subnet show --name $SUBNET_NAME --vnet-name $VNET_NAME --resource-group $RESOURCE_GROUP --query 'addressPrefix' -o tsv)
+
 # Create ARM template
 cat << EOF > ${TMP_DIR}/$TEMPLATE_FILENAME
 {
@@ -90,6 +97,9 @@ cat << EOF > ${TMP_DIR}/$TEMPLATE_FILENAME
             "type": "string"
         },
         "subnetName": {
+            "type": "string"
+        },
+        "subnetCidr": {
             "type": "string"
         },
         "rgRoleGuid": {
@@ -202,6 +212,27 @@ cat << EOF > ${TMP_DIR}/$TEMPLATE_FILENAME
             }
         },
         {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2023-04-01",
+            "name": "[format('{0}/{1}', parameters('vnetName'), parameters('subnetName'))]",
+            "properties": {
+                "addressPrefix": "[parameters('subnetCidr')]",
+                "serviceEndpoints": [
+                    {
+                        "service": "Microsoft.Storage"
+                    }
+                ],
+                "delegations": [
+                    {
+                        "name": "Microsoft.ContainerInstance.containerGroups",
+                        "properties": {
+                            "serviceName": "Microsoft.ContainerInstance/containerGroups"
+                        }
+                    }
+                ]
+            }
+        },
+        {
             "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
             "apiVersion": "2018-11-30",
             "name": "[parameters('managedIdName')]",
@@ -246,9 +277,12 @@ if [[ -z $(az network vnet subnet list -g $RESOURCE_GROUP --vnet-name $VNET_NAME
 fi
 
 az deployment group create \
-    --name "${NAME_PREFIX}-deploy-script"
+    --name "${NAME_PREFIX}-deploy-script" \
     --resource-group $RESOURCE_GROUP \
     --template-file ${TMP_DIR}/${TEMPLATE_FILENAME} \
     --parameters namePrefix=${NAME_PREFIX} \
     --parameters vnetName=${VNET_NAME} \
-    --parameters subnetName=${SUBNET_NAME}
+    --parameters subnetName=${SUBNET_NAME} \
+    --parameters subnetCidr=${SUBNET_CIDR}
+
+rm ${TMP_DIR}/${TEMPLATE_FILENAME}
