@@ -348,73 +348,79 @@ if [[ -z $(${BIN_DIR}/oc get storagecluster -n openshift-storage ocs-storageclus
     echo "INFO: Creating storage cluster ocs-storagecluster"
     SC_NAME=$(${BIN_DIR}/oc get sc | grep disk.csi.azure.com | awk '{print$1}')
     cat << EOF | oc apply -f -
-apiVersion: v1
-items:
-- apiVersion: ocs.openshift.io/v1
-  kind: StorageCluster
-  metadata:
-    name: ocs-storagecluster
-    namespace: openshift-storage
-  spec:
-    arbiter: {}
-    encryption:
-      clusterWide: true
-      enable: true
-      keyRotation:
-        schedule: '@weekly'
-      kms: {}
-    externalStorage: {}
-    managedResources:
-      cephBlockPools: {}
-      cephCluster: {}
-      cephConfig: {}
-      cephDashboard: {}
-      cephFilesystems:
-        dataPoolSpec:
-          application: ""
-          erasureCoded:
-            codingChunks: 0
-            dataChunks: 0
-          mirroring: {}
-          quotas: {}
-          replicated:
-            size: 0
-          statusCheck:
-            mirror: {}
-      cephNonResilientPools:
-        count: 1
-        resources: {}
-        volumeClaimTemplate:
-          metadata: {}
-          spec:
-            resources: {}
-          status: {}
-      cephObjectStoreUsers: {}
-      cephObjectStores: {}
-      cephRBDMirror:
-        daemonCount: 1
-      cephToolbox: {}
-    mirroring: {}
-    storageDeviceSets:
-    - config: {}
+apiVersion: ocs.openshift.io/v1
+kind: StorageCluster
+metadata:
+  name: ocs-storagecluster
+  namespace: openshift-storage
+spec:
+  arbiter: {}
+  encryption:
+    clusterWide: true
+    enable: true
+    keyRotation:
+      schedule: '@weekly'
+    kms: {}
+  externalStorage: {}
+  managedResources:
+    cephBlockPools: {}
+    cephCluster: {}
+    cephConfig: {}
+    cephDashboard: {}
+    cephFilesystems:
+      dataPoolSpec:
+        application: ""
+        erasureCoded:
+          codingChunks: 0
+          dataChunks: 0
+        mirroring: {}
+        quotas: {}
+        replicated:
+          size: 0
+        statusCheck:
+          mirror: {}
+    cephNonResilientPools:
       count: 1
-      dataPVCTemplate:
+      resources: {}
+      volumeClaimTemplate:
         metadata: {}
         spec:
-          accessModes:
-          - ReadWriteOnce
-          resources:
-            requests:
-              storage: ${STORAGE_SIZE}
-          storageClassName: ${SC_NAME}
-          volumeMode: Block
+          resources: {}
         status: {}
-      name: fusion-storage
-      placement: {}
-      preparePlacement: {}
-      replica: 3
-      resources: {}
+    cephObjectStoreUsers: {}
+    cephObjectStores: {}
+    cephRBDMirror:
+      daemonCount: 1
+    cephToolbox: {}
+  mirroring: {}
+  storageDeviceSets:
+  - config: {}
+    count: 1
+    dataPVCTemplate:
+      metadata: {}
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: ${STORAGE_SIZE}
+        storageClassName: ${SC_NAME}
+        volumeMode: Block
+      status: {}
+    name: fusion-storage
+    placement: {}
+    preparePlacement: {}
+    replica: 3
+    resources: {}
 EOF
+
+  if [[ $? != 0 ]]; then
+    echo "ERROR: Unable to create storage cluster"
+    exit 1
+  else
+    echo "INFO: Pausing for storage cluster to be created"
+    sleep 60
+  fi
 else
     echo "INFO: Using existing storage cluster"
 fi
