@@ -1,0 +1,39 @@
+{
+    "cluster": {
+        "api_server": "<cluster_api_url>",
+        "username": "kubeadmin",
+        "password": "<kubeadmin_password>",
+        "token": "",
+        "storageclass": {
+            "block": "ocs-storagecluster-ceph-rbd",
+            "file": "ocs-storagecluster-cephfs"
+        },
+        "version": "4.14"
+    },
+    "fusion": {
+        "storageSize": "2Ti"
+    },
+    "cpd": {
+        "version": "5.1.1",
+        "edition": "EE",
+        "cpdcli_version": "14.1.1",
+        "namespace": {
+            "cpd_operator": "cpd-operator",
+            "cpd_operands": "cpd-instance",
+            "cert_manager": "ibm-cert-manager",
+            "scheduling_service": "ibm-cpd-scheduler",
+            "license_service": "ibm-licensing"
+        },
+        "tuning_disabled": "false",
+        "lite_version": "false",
+        "ibm_entitlement_key": "<ibm_entitlement_key>"
+    },
+    "rhoai": {
+        "version": "2.13"
+    },
+    "directories": {
+        "bin_dir": "/usr/local/bin",
+        "cpd_dir": "$HOME/cpd/cpd-cli-workspace",
+        "tmp_dir": "/tmp"
+    }
+}
