@@ -1,0 +1,15 @@
+{
+    "cluster": {
+        "api_server": "<cluster_api_url>",
+        "username": "kubeadmin",
+        "password": "<kubeadmin_password>",
+        "version": "4.14"
+    },
+    "fusion": {
+        "storageSize": "2Ti"
+    },
+    "directories": {
+        "bin_dir": "/usr/local/bin",
+        "tmp_dir": "/tmp"
+    }
+}
