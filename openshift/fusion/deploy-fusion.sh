@@ -196,14 +196,14 @@ while [[ $(${BIN_DIR}/oc get SpectrumFusion -n ibm-spectrum-fusion-ns spectrumfu
     sleep 30
     count=$(( $count + 1 ))
     if (( $count > $TIMEOUT_COUNT )); then
-        echo "ERROR: Timeout exceeded waiting for DSC Initialization to be ready"
+        echo "ERROR: Timeout exceeded waiting for SpectrumFusion to be ready"
         exit 1
     fi
 done
 
 ####
 # Deploy data foundation service
-cat << EOF | ${BIN_DIR}/oc apply -f -
+cat << EOF | oc apply -f -
 apiVersion: service.isf.ibm.com/v1
 kind: FusionServiceInstance
 metadata:
@@ -221,7 +221,7 @@ spec:
     value: Fusion
   - name: backingStorageType
     provided: true
-    value: Local
+    value: Dynamic
   - name: autoUpgrade
     provided: false
     value: "true"
@@ -239,7 +239,7 @@ while [[ $(${BIN_DIR}/oc get FusionServiceInstance -n ibm-spectrum-fusion-ns odf
     sleep 30
     count=$(( $count + 1 ))
     if (( $count > $TIMEOUT_COUNT )); then
-        echo "ERROR: Timeout exceeded waiting for DSC Initialization to be ready"
+        echo "ERROR: Timeout exceeded waiting for Data Foundation to be ready"
         exit 1
     fi
 done
@@ -347,7 +347,7 @@ fi
 if [[ -z $(${BIN_DIR}/oc get storagecluster -n openshift-storage ocs-storagecluster) ]]; then
     echo "INFO: Creating storage cluster ocs-storagecluster"
     SC_NAME=$(${BIN_DIR}/oc get sc | grep disk.csi.azure.com | awk '{print$1}')
-    cat << EOF | oc apply -f -
+    cat << EOF | ${BIN_DIR}/oc apply -f -
 apiVersion: ocs.openshift.io/v1
 kind: StorageCluster
 metadata:
